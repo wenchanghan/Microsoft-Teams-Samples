@@ -5,16 +5,20 @@
 
 # Sample lists
 
-1. [Ready to try sample manifests](#try-it-yourself---experience-the-apps-in-your-microsoft-teams-client)
-1. [Teams Toolkit samples](#samples-built-using-new-generation-of-teams-development-tool---teams-toolkit)
-1. [Getting Started Samples and Tutorials](#getting-started---samples-and-tutorials)
-1. [Tabs samples](#Tabs-samples)
-1. [Bots samples (using the v4 SDK)](#Bots-samples-using-the-v4-SDK)
-1. [Messaging Extensions samples (using the v4 SDK)](#Messaging-Extensions-samples-using-the-v4-SDK)
-1. [Webhooks and Connectors samples](#Webhooks-and-Connectors-samples)
-1. [Graph APIs](#Graph-APIs)
-1. [Calls and online meetings bots](#Calls-and-online-meetings-bots)
-1. [Scenario specific samples](#Scenario-specific-samples)
+- [Try it yourself - experience the Apps in your Microsoft Teams client](#try-it-yourself---experience-the-apps-in-your-microsoft-teams-client)
+- [Samples built using new generation of Teams development tool - Teams Toolkit](#samples-built-using-new-generation-of-teams-development-tool---teams-toolkit)
+- [Getting Started - Samples and Tutorials](#getting-started---samples-and-tutorials)
+- [Tabs samples](#tabs-samples)
+- [Bots samples (using the v4 SDK)](#bots-samples-using-the-v4-sdk)
+  - [Additional samples](#additional-samples)
+- [Messaging Extensions samples (using the v4 SDK)](#messaging-extensions-samples-using-the-v4-sdk)
+  - [Additional samples](#additional-samples-1)
+- [Webhooks and Connectors samples](#webhooks-and-connectors-samples)
+- [Graph APIs](#graph-apis)
+- [Calls and online meetings bots](#calls-and-online-meetings-bots)
+- [Scenario specific samples](#scenario-specific-samples)
+- [Submitting issues](#submitting-issues)
+- [Contributing](#contributing)
 
 
 ## Try it yourself - experience the Apps in your Microsoft Teams client
@@ -197,6 +201,7 @@ The [Teams Toolkit](https://marketplace.visualstudio.com/items?itemName=TeamsDev
 |25|Meeting signing programmatic share to stage|Demonstrating the programmatic share to stage feature, by means of a document signing in a meeting.|[View][meetings-share-to-stage-signing#csharp]||
 |26|Live coding interview using Shared meeting stage |This sample demos a live coding in a teams meeting stage.|[View][meetings-live-code-interview#csharp]|[View][meetings-live-code-interview#nodejs]|
 |27|Release Management     | This is a sample used to send workitem notification using Azure webhook.                                        |[View][release-management#cs]       |[View][release-management#nodejs]
+|28|Graph Connectors | Demonstrating how to manage Graph ExternalConnections and ingest ExternalItems into M365 to enable search and compliance on app data.|[View][graph-connectors#csharp]||
 
 [app-hello-world#cs]:samples/app-hello-world/csharp
 [app-hello-world#ts]:samples/app-hello-world/nodejs
@@ -340,6 +345,7 @@ The [Teams Toolkit](https://marketplace.visualstudio.com/items?itemName=TeamsDev
 [graph-activity-feed#js]:samples/graph-activity-feed/nodejs
 [graph-change-notification#cs]:samples/graph-change-notification/csharp
 [graph-change-notification#js]:samples/graph-change-notification/nodejs
+[graph-connectors#csharp]:samples/graph-connectors/csharp
 [peoplepickeronadaptivecard#js]:samples/bot-people-picker-adaptive-card/nodejs
 [peoplepickeronadaptivecard#csharp]:samples/bot-people-picker-adaptive-card/csharp
 [graph-activity-feed-broadcast#js]:samples/graph-activity-feed-broadcast/nodejs
