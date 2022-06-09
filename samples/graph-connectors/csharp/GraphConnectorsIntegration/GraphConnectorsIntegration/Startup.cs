@@ -1,5 +1,7 @@
 ﻿namespace GraphConnectorsIntegration
 {
+    using GraphConnectorsIntegration.Services.AadService;
+    using GraphConnectorsIntegration.Services.GraphService;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -17,6 +19,8 @@
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpClient<IGraphService, GraphService>();
+            services.AddHttpClient<IAadService, AadService>();
             services.AddControllers();
         }
 

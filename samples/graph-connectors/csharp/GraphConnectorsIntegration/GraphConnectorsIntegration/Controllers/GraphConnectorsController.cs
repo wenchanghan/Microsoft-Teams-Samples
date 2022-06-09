@@ -1,5 +1,7 @@
 ﻿namespace GraphConnectorsIntegration.Controllers
 {
+    using GraphConnectorsIntegration.Services.GraphService;
+    using GraphConnectorsIntegration.Services.GraphService.Models;
     using GraphConnectorsIntegration.Utilities;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Graph;
@@ -15,10 +17,12 @@
     {
         private const string AppId = "";
         private readonly WebhookTokenValidator webhookTokenValidator;
+        private readonly IGraphService graphService;
 
-        public GraphConnectorsController()
+        public GraphConnectorsController(IGraphService graphService)
         {
             this.webhookTokenValidator = new WebhookTokenValidator();
+            this.graphService = graphService ?? throw new ArgumentNullException(nameof(graphService));
         }
 
         [HttpPost]
@@ -62,17 +66,41 @@
             // Ideally, this should be done in a worker/processor after ack'ing the Webhook notification call.
             if (string.Equals("disabled", targetConnectorState, StringComparison.OrdinalIgnoreCase))
             {
-                // Get all connections.
-                // Delete all connections.
+                ODataCollection<ExternalConnection> externalConnections = await this.graphService.GetExternalConnectionsAsync(tenantIdFromNotification);
+
+                // Remove all connections for the current app. Existing data in connections will be deleted too.
+                // For simplicity, firing deletions in parallel. Please add robust concurrency management (i.e. Semaphore) for production scenarios.
+                if (externalConnections?.Value.Any() == true)
+                {
+                    await Task.WhenAll(externalConnections.Value.Select(c => this.graphService.DeleteExternalConnectionAsync(tenantIdFromNotification, c.Id)));
+                }
             }
             else if (string.Equals("enabled", targetConnectorState, StringComparison.OrdinalIgnoreCase))
             {
                 string connectorId = GetChangeDetailByName(changeDetails, "id");
                 string connectorTicket = GetChangeDetailByName(changeDetails, "connectorsTicket");
 
-                // Create connection.
-                // Create schema.
-                // Simulate data ingestions.
+                // For simplicity, creating a single connection.
+                ExternalConnection newConnection = new ExternalConnection
+                {
+                    Id = "contosohr",
+                    Name = "Contoso HR",
+                    Description = "Connection to index Contoso HR system",
+                    ConnectorId = connectorId,
+                    EnabledContentExperiences = "MicrosoftSearch, Compliance, IntelligentDiscovery",
+                };
+                ExternalConnection createdConnection = await this.graphService.PostExternalConnectionAsync(tenantIdFromNotification, newConnection, connectorTicket);
+
+                Schema schemaForNewConnection = new Schema
+                {
+                    Properties = new List<SchemaProperty>
+                    {
+                        new SchemaProperty { Name = "ticketTitle", Type = "String" },
+                        new SchemaProperty { Name = "priority", Type = "String" },
+                        new SchemaProperty { Name = "assignee", Type = "String" },
+                    }
+                };
+                await this.graphService.PostExternalConnectionSchemaAsync(tenantIdFromNotification, createdConnection.Id, schemaForNewConnection);
             }
             else
             {
@@ -80,6 +108,7 @@
                 return this.Ok();
             }
 
+            // Placeholder - Persist customer's connection state for data ingestion flow.
             return this.Ok();
         }
 
