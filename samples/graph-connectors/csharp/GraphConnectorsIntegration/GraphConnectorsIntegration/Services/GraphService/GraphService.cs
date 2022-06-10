@@ -40,6 +40,30 @@
             }
         }
 
+        public async Task<ExternalConnection> GetExternalConnectionByIdAsync(string tenantId, string connectionId)
+        {
+            if (string.IsNullOrWhiteSpace(tenantId))
+            {
+                throw new ArgumentNullException(nameof(tenantId));
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionId))
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
+            string url = $"{BaseUrl}/beta/external/connections/{connectionId}";
+            string token = await this.aadService.GetAccessTokenForAppAsync(tenantId, ResourceId);
+            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url))
+            {
+                request.Headers.Add("Authorization", $"Bearer {token}");
+                HttpResponseMessage response = await this.httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<ExternalConnection>(responseBody);
+            }
+        }
+
         public async Task<ExternalConnection> PostExternalConnectionAsync(string tenantId, ExternalConnection externalConnection, string connectorTicket)
         {
             if (string.IsNullOrWhiteSpace(tenantId))
@@ -101,6 +125,11 @@
                 throw new ArgumentNullException(nameof(tenantId));
             }
 
+            if (string.IsNullOrWhiteSpace(connectionId))
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
             if (schema == null)
             {
                 throw new ArgumentNullException(nameof(schema));
@@ -116,6 +145,39 @@
                 response.EnsureSuccessStatusCode();
                 string responseBody = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<Schema>(responseBody);
+            }
+        }
+
+        public async Task PutExternalItemAsync<ExternalItem>(string tenantId, string connectionId, string itemId, ExternalItem externalItem)
+        {
+            if (string.IsNullOrWhiteSpace(tenantId))
+            {
+                throw new ArgumentNullException(nameof(tenantId));
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionId))
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentNullException(nameof(itemId));
+            }
+
+            if (externalItem == null)
+            {
+                throw new ArgumentNullException(nameof(externalItem));
+            }
+
+            string url = $"{BaseUrl}/beta/external/connections/{connectionId}/items/{itemId}";
+            string token = await this.aadService.GetAccessTokenForAppAsync(tenantId, ResourceId);
+            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, url))
+            {
+                request.Content = new StringContent(JsonConvert.SerializeObject(externalItem), Encoding.UTF8, "application/json");
+                request.Headers.Add("Authorization", $"Bearer {token}");
+                HttpResponseMessage response = await this.httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
             }
         }
     }

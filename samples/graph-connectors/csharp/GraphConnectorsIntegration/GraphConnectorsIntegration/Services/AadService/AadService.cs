@@ -10,9 +10,6 @@
 
     public class AadService : IAadService
     {
-        private const string AppId = "";
-        private const string AppSecret = "";
-
         private const string BaseUrl = "https://login.microsoftonline.com";
         private readonly HttpClient httpClient;
 
@@ -38,8 +35,8 @@
             {
                 new KeyValuePair<string, string>("scope", resourceId + ".default"),
                 new KeyValuePair<string, string>("grant_type", "client_credentials"),
-                new KeyValuePair<string, string>("client_id", AppId),
-                new KeyValuePair<string, string>("client_secret", AppSecret),
+                new KeyValuePair<string, string>("client_id", ServiceConstants.AppId),
+                new KeyValuePair<string, string>("client_secret", ServiceConstants.AppSecret),
             };
 
             string requestContentString = this.ConvertKeyValuePairToContentString(contentKeyVaulePairs);
