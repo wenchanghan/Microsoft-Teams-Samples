@@ -16,5 +16,7 @@
         public Task<Schema> PostExternalConnectionSchemaAsync(string tenantId, string connectionId, Schema schema);
 
         public Task PutExternalItemAsync<ExternalItem>(string tenantId, string connectionId, string itemId, ExternalItem externalItem);
+
+        public Task<ExternalItem<T>> GetExternalItemAsync<T>(string tenantId, string connectionId, string itemId) where T : ExternalItemProperty;
     }
 }

@@ -2,10 +2,10 @@
 
 1. Update `ServiceConstants.cs` with app's AAD AppId and AppSecret. Use a test AAD app with the new GraphConnectors-related API permissions configured per developer guide.
 1. Locate a test tenant. Login to the test customer tenant and grant consent to use the AAD test app.
-1. Prepare the payload using the template below; update parameters in {{}}. Please also read inline comments related to "connectorsTicket" and "validationTokens".
+1. Prepare the payload using the template at bottom of this file; update parameters in {{}}. Please also read inline comments related to "connectorsTicket" and "validationTokens".
 1. Build and debug GraphConnectorsIntegration project.
 1. Set a breakpoint around ValidationTokens validation so you could check the validation logics as well as force-bypassing the validation (which would fail due to mismatch between the sample validation token and the actual app-customer combo).
-1. Trigger an HTTP POST call to the webhook notification processing API endpoint with the prepared notification payload. Follow debugger.
+1. Trigger an HTTP POST call to the webhook notification processing API endpoint with the prepared notification payload. Follow debugger and bypass ValidationTokens validation.
     1. The HTTP request looks like this -
 	```
 	POST https://localhost:1383/GraphConnectors/ProcessGraphWebhookChangeNotificationCollection HTTP/1.1
@@ -13,20 +13,35 @@
     
 	{prepared webhook notification payload}
 	```
+1. Feel free to retrieve Graph connections and observe the created connection progressing from `draft` state to `ready` state over time.
+    1. For convenience, the sample app exposes a proxy API to retrieve the connections. The HTTP request looks like this -
+	```
+	GET https://localhost:1383/GraphConnectors/connections HTTP/1.1
+	accept: application/json
+	x-tenantId: {{customerTenantId}}
+	```
 1. Once connection creation succeeds, consider calling the other API endpoint to simulate data ingestion. It has internal logics to only trigger ingestion when connection is in ready state.
     1. The HTTP request looks like this -
 	```
-	POST https://localhost:1383/GraphConnectors/SimulateDataIngestion?customerTenantId={{customerTenantId}}&connectionId=contosohr HTTP/1.1
+	POST https://localhost:1383/GraphConnectors/connections/contosohr/SimulateDataIngestion HTTP/1.1
 	content-type: application/json
+	x-tenantId: {{customerTenantId}}
     ```
+1. Feel free to retrieve the ingested ExternalItem from Graph API.
+    1. For convenience, the sample app exposes a proxy API to retrieve the ingested item. The HTTP request looks like this -
+	```
+	GET https://localhost:1383/GraphConnectors/connections/contosohr/items/TSP228082938 HTTP/1.1
+	accept: application/json
+	x-tenantId: {{customerTenantId}}
+	```
 
 <b>Template for Webhook Notification payload</b>
 
 - For {{connectorId}}, use a random guid.
-- For {{state}}, set can use "enabled" or "disabled"
+- For {{state}}, set to "enabled" or "disabled".
 - For {{customerTenantId}}, use the test tenant's tenant id.
-- For "connectorsTicket", it is just a sample. It's meant to carry the current app's metadata like app icon, name. DO NOT USE in production env.
-- For validationToken, it is a sample to help with testing. It's already expired and contains test data. DO NOT USE in production env.
+- For "connectorsTicket", it is just a sample. It's meant to carry the current app's metadata like app icon, name.
+- For validationToken, it is a sample to help with testing. It's already expired and contains test data.
 
 ```
 {

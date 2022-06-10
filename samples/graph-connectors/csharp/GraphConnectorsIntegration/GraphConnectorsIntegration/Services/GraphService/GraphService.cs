@@ -180,5 +180,34 @@
                 response.EnsureSuccessStatusCode();
             }
         }
+
+        public async Task<ExternalItem<T>> GetExternalItemAsync<T>(string tenantId, string connectionId, string itemId) where T: ExternalItemProperty
+        {
+            if (string.IsNullOrWhiteSpace(tenantId))
+            {
+                throw new ArgumentNullException(nameof(tenantId));
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionId))
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentNullException(nameof(itemId));
+            }
+
+            string url = $"{BaseUrl}/beta/external/connections/{connectionId}/items/{itemId}";
+            string token = await this.aadService.GetAccessTokenForAppAsync(tenantId, ResourceId);
+            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url))
+            {
+                request.Headers.Add("Authorization", $"Bearer {token}");
+                HttpResponseMessage response = await this.httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<ExternalItem<T>>(responseBody);
+            }
+        }
     }
 }

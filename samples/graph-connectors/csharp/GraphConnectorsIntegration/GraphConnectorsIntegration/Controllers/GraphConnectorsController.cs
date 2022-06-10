@@ -5,6 +5,7 @@
     using GraphConnectorsIntegration.Services.GraphService.Models.ExternalItems;
     using GraphConnectorsIntegration.Utilities;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Primitives;
     using Microsoft.Graph;
     using Newtonsoft.Json;
     using System;
@@ -87,7 +88,7 @@
                 ExternalConnection newConnection = new ExternalConnection
                 {
                     Id = "contosohr",
-                    Name = "Contoso HR",
+                    // No need to set Name - it will be set to the App name encoded in the connectorTicket.
                     Description = "Connection to index Contoso HR system",
                     ConnectorId = connectorId,
                     EnabledContentExperiences = "MicrosoftSearch, Compliance, IntelligentDiscovery",
@@ -98,9 +99,9 @@
                 {
                     Properties = new List<SchemaProperty>
                     {
-                        new SchemaProperty { Name = GetJsonPropertyName(typeof(ContosoHrExternalItem), nameof(ContosoHrExternalItem.Title)), Type = "String", IsSearchable = true, IsRetrievable = true, Labels = new string[] { "title" } },
-                        new SchemaProperty { Name = GetJsonPropertyName(typeof(ContosoHrExternalItem), nameof(ContosoHrExternalItem.Priority)), Type = "String", IsQueryable = true, IsRetrievable = true, IsSearchable = false },
-                        new SchemaProperty { Name = GetJsonPropertyName(typeof(ContosoHrExternalItem), nameof(ContosoHrExternalItem.Assignee)), Type = "String", IsRetrievable = true },
+                        new SchemaProperty { Name = GetJsonPropertyName(typeof(ContosoHrExternalItem), nameof(ContosoHrExternalItem.Title)), Type = "string", IsSearchable = true, IsRetrievable = true, Labels = new string[] { "title" } },
+                        new SchemaProperty { Name = GetJsonPropertyName(typeof(ContosoHrExternalItem), nameof(ContosoHrExternalItem.Priority)), Type = "int64", IsQueryable = true, IsRetrievable = true, IsSearchable = false },
+                        new SchemaProperty { Name = GetJsonPropertyName(typeof(ContosoHrExternalItem), nameof(ContosoHrExternalItem.Assignee)), Type = "string", IsRetrievable = true },
                     }
                 };
                 await this.graphService.PostExternalConnectionSchemaAsync(tenantIdFromNotification, createdConnection.Id, schemaForNewConnection);
@@ -116,17 +117,19 @@
         }
 
         [HttpPost]
-        [Route("SimulateDataIngestion")] // This is only to demonstrate how to integrate with Graph Connectors' data ingestion API. The logics should lie inside of app's existing business logics.
-        public async Task<IActionResult> SimulateDataIngestionAsync([FromQuery] string customerTenantId, [FromQuery] string connectionId)
+        [Route("connections/{connectionId}/SimulateDataIngestion")] // This is only to demonstrate how to integrate with Graph Connectors' data ingestion API. The logics should lie inside of app's existing business logics.
+        public async Task<IActionResult> SimulateDataIngestionAsync([FromRoute] string connectionId)
         {
-            if (string.IsNullOrWhiteSpace(customerTenantId))
-            {
-                throw new ArgumentNullException(nameof(customerTenantId));
-            }
-
             if (string.IsNullOrWhiteSpace(connectionId))
             {
                 throw new ArgumentNullException(nameof(connectionId));
+            }
+
+            this.Request.Headers.TryGetValue("x-tenantId", out StringValues customerTenantIdStringValues);
+            string customerTenantId = customerTenantIdStringValues.SingleOrDefault();
+            if (string.IsNullOrWhiteSpace(customerTenantId))
+            {
+                throw new ArgumentNullException(nameof(customerTenantId));
             }
 
             ExternalConnection externalConnection = await this.graphService.GetExternalConnectionByIdAsync(customerTenantId, connectionId);
@@ -158,6 +161,48 @@
             };
             await this.graphService.PutExternalItemAsync(customerTenantId, connectionId, itemId, externalItem);
             return this.Ok();
+        }
+
+        [HttpGet]
+        [Route("connections")]
+        public async Task<IActionResult> GetAllConnectionsAsync()
+        {
+            this.Request.Headers.TryGetValue("x-tenantId", out StringValues customerTenantIdStringValues);
+            string customerTenantId = customerTenantIdStringValues.SingleOrDefault();
+            if (string.IsNullOrWhiteSpace(customerTenantId))
+            {
+                throw new ArgumentNullException(nameof(customerTenantId));
+            }
+
+            // Ideally, the dependency model should be mapped to a service model/contract so dependency changes can be abstracted/stabilized.
+            // In this sample, directly return Graph's response for simplicity.
+            return this.Ok(await this.graphService.GetExternalConnectionsAsync(customerTenantId));
+        }
+
+        [HttpGet]
+        [Route("connections/{connectionId}/items/{itemId}")]
+        public async Task<IActionResult> GetExternalItemAsync([FromRoute] string connectionId, [FromRoute] string itemId)
+        {
+            if (string.IsNullOrWhiteSpace(connectionId))
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentNullException(nameof(itemId));
+            }
+
+            this.Request.Headers.TryGetValue("x-tenantId", out StringValues customerTenantIdStringValues);
+            string customerTenantId = customerTenantIdStringValues.SingleOrDefault();
+            if (string.IsNullOrWhiteSpace(customerTenantId))
+            {
+                throw new ArgumentNullException(nameof(customerTenantId));
+            }
+
+            // Ideally, the dependency model should be mapped to a service model/contract so dependency changes can be abstracted/stabilized.
+            // In this sample, directly return Graph's response for simplicity.
+            return this.Ok(await this.graphService.GetExternalItemAsync<ContosoHrExternalItem>(customerTenantId, connectionId, itemId));
         }
 
         private static string GetChangeDetailByName(IDictionary<string, object> changeDetails, string key)
