@@ -33,7 +33,7 @@
             string url = $"{BaseUrl}/{tenantId}/oauth2/v2.0/token";
             IList<KeyValuePair<string, string>> contentKeyVaulePairs = new List<KeyValuePair<string, string>>()
             {
-                new KeyValuePair<string, string>("scope", resourceId + ".default"),
+                new KeyValuePair<string, string>("scope", resourceId + "/.default"),
                 new KeyValuePair<string, string>("grant_type", "client_credentials"),
                 new KeyValuePair<string, string>("client_id", ServiceConstants.AppId),
                 new KeyValuePair<string, string>("client_secret", ServiceConstants.AppSecret),

@@ -59,7 +59,7 @@
             IDictionary<string, object> changeDetails = changeNotification.ResourceData?.AdditionalData;
             string targetConnectorState = GetChangeDetailByName(changeDetails, "state");
 
-            if (!changeNotification.Resource.Contains("external/connectors"))
+            if (!changeNotification.Resource.Contains("external"))
             {
                 // Resource not in scope for processing. Discard.
                 return this.Ok();
