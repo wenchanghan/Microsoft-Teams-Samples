@@ -88,7 +88,7 @@
                 ExternalConnection newConnection = new ExternalConnection
                 {
                     Id = "contosohr",
-                    // No need to set Name - it will be set to the App name encoded in the connectorTicket.
+                    Name = "dummy", // It will be overridden to the App name encoded in the connectorTicket.
                     Description = "Connection to index Contoso HR system",
                     ConnectorId = connectorId,
                     EnabledContentExperiences = "MicrosoftSearch, Compliance, IntelligentDiscovery",
